@@ -86,6 +86,12 @@ BEGIN {
         $0 = gensub(/^( *[0-9]+ )(\(.\) )?/, "\\1X " dateString " ", "")
     }
 }
+{
+    IGNORECASE = 1
+}
+/ message-id:[[:alnum:]=.<>_\-/@#]+/ {
+    $0=gensub(/ (message-id:[[:alnum:]=.<>_\-/@#]+)/, " a:(mutt)", "");
+}
 { print }
 '
 else

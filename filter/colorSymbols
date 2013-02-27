@@ -21,8 +21,15 @@
 
 export COLOR_CONTEXT=${COLOR_CONTEXT-'\\033[35m'}
 export COLOR_TASKNUM=${COLOR_TASKNUM-'\\033[7m'}
+export COLOR_TASKNUM_PRI_A=${COLOR_TASKNUM_PRI_A-'\\033[0;41m'}
+export COLOR_TASKNUM_PRI_B=${COLOR_TASKNUM_PRI_B-'\\033[5;45m'}
+export COLOR_TASKNUM_PRI_C=${COLOR_TASKNUM_PRI_C-'\\033[0;43m'}
+export COLOR_TASKNUM_PRI_O=${COLOR_TASKNUM_PRI_O-'\\033[0;42m'}
+export COLOR_TASKNUM_PRI_P=${COLOR_TASKNUM_PRI_P-'\\033[7;47m'}
+export COLOR_TASKNUM_PRI_X=${COLOR_TASKNUM_PRI_X-'\\033[0;46m'}
 export COLOR_PROJECT=${COLOR_PROJECT-'\\033[1;34m'}
-export COLOR_DATE=${COLOR_DATE-$CYAN}
+export COLOR_MARKERS='\\033[38;5;202m'
+export COLOR_COMMENT='\\033[4m'
 export COLOR_ALTERNATING=${COLOR_ALTERNATING-$DEFAULT'\\033[47m'}
 
 if [ $TODOTXT_PLAIN -eq 0 ]; then
@@ -86,8 +93,15 @@ function getLineColor() {
                 taskNumWidth = RLENGTH - 1
             }
 
+            if ($0 ~ /\(A\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_A" }
+                else if ($0 ~ /\(B\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_B" }
+                else if ($0 ~ /\(C\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_C" }
+                else if ($0 ~ /\(O\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_O" }
+                else if ($0 ~ /\(P\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_P" }
+                else if ($0 ~ /\(.\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_X" }
+
             # Highlight current task number.
-            $0 = gensub(/([0-9]+) /, highlight("COLOR_TASKNUM") "\\1" highlightend("COLOR_TASKNUM", lineColor) " ", " ")
+            $0 = gensub(/([0-9]+) /, highlight(bg_tasknum) "\\1" highlightend(bg_tasknum, lineColor) " ", " ")
 
             # Highlight any m:42 references to other tasks, and normalize number
             # width to e.g. m:042.
@@ -101,7 +115,8 @@ function getLineColor() {
     }
     if (hasHighlight("COLOR_CONTEXT")) $0 = gensub(/ (@[^ ]+)/, " " highlight("COLOR_CONTEXT") "\\1" highlightend("COLOR_CONTEXT", lineColor), "g")
     if (hasHighlight("COLOR_PROJECT")) $0 = gensub(/ (\+[^ ]+)/, " " highlight("COLOR_PROJECT") "\\1" highlightend("COLOR_PROJECT", lineColor), "g")
-    if (hasHighlight("COLOR_DATE"))   $0 = gensub(/ ([0-9]{4}-[0-9]{2}-[0-9]{2}) /, " " highlight("COLOR_DATE") "\\1" lineColor " ", "")
+    if (hasHighlight("COLOR_MARKERS")) $0 = gensub(/ ([[:alnum:]_\-/@#]+:[[:alnum:]=.<>_\-/@#]+)/, " " highlight("COLOR_MARKERS") "\\1" highlightend("COLOR_MARKERS", lineColor), "g")
+    if (hasHighlight("COLOR_COMMENT")) $0 = gensub(/ \/\* ([^*]*) \*\//, " " highlight("COLOR_COMMENT") "\\1" highlightend("COLOR_COMMENT", lineColor), "g");
 
     $0 = $0 lineEndColor
 
