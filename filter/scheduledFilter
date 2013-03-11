@@ -35,6 +35,11 @@ function getThreshold(date) {
 BEGIN {
     threshold = getThreshold(date)
 }
+{ IGNORECASE = 1 }
+/ message-id:[[:alnum:]=.<>_\-/@#]+/ {
+    $0=gensub(/ (message-id:[[:alnum:]=.<>_\-/@#]+)/, " a:(mutt)", "");
+}
+{ IGNORECASE = 0 }
 / *[0-9]+ [xX] / {
     # Do not process done tasks.
     print
@@ -85,12 +90,6 @@ BEGIN {
         dateString = gensub(/^.* z:([0-9]{4}-[0-9]{2}-[0-9]{2})([^0-9].*)?$/, "\\1", "")
         $0 = gensub(/^( *[0-9]+ )(\(.\) )?/, "\\1X " dateString " ", "")
     }
-}
-{
-    IGNORECASE = 1
-}
-/ message-id:[[:alnum:]=.<>_\-/@#]+/ {
-    $0=gensub(/ (message-id:[[:alnum:]=.<>_\-/@#]+)/, " a:(mutt)", "");
 }
 { print }
 '
