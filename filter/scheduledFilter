@@ -37,7 +37,7 @@ BEGIN {
 }
 { IGNORECASE = 1 }
 / message-id:[[:alnum:]=.<>_\-/@#]+/ {
-    $0=gensub(/ (message-id:[[:alnum:]=.<>_\-/@#]+)/, " a:(mutt)", "");
+    $0=gensub(/ (message-id:[[:alnum:]=.<>_\-/@#$]+)/, " a:(mutt)", "");
 }
 { IGNORECASE = 0 }
 / *[0-9]+ [xX] / {

@@ -51,6 +51,6 @@ else
     # Consider only tasks that are not yet done.
     # The tasks are already numbered when the filter is applied, so there
     # definitely is a space in front of the marker.
-    post_filter_command="grep -ve '^ *[0-9]\+ [xX] '"
+    post_filter_command="grep -ve '^ *[0-9]\+ [xX] '${post_filter_command:+ | $post_filter_command}"
     _list "$TODO_FILE" "$@"
 fi
