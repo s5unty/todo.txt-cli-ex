@@ -114,7 +114,7 @@ function getLineColor() {
         }
     }
     if (hasHighlight("COLOR_CONTEXT")) $0 = gensub(/ (@[^ ]+)/, " " highlight("COLOR_CONTEXT") "\\1" highlightend("COLOR_CONTEXT", lineColor), "g")
-    if (hasHighlight("COLOR_PROJECT")) $0 = gensub(/ (\+[^ ]+)/, " " highlight("COLOR_PROJECT") "\\1" highlightend("COLOR_PROJECT", lineColor), "g")
+    if (hasHighlight("COLOR_PROJECT")) $0 = gensub(/ (\+[a-zA-Z][^ ]+)/, " " highlight("COLOR_PROJECT") "\\1" highlightend("COLOR_PROJECT", lineColor), "g")
     if (hasHighlight("COLOR_MARKERS")) $0 = gensub(/ ([[:alnum:]_\-/@#]+:[[:alnum:]=.<>_\-/@#]+)/, " " highlight("COLOR_MARKERS") "\\1" highlightend("COLOR_MARKERS", lineColor), "g")
     if (hasHighlight("COLOR_COMMENT")) $0 = gensub(/ \/\* ([^*]*) \*\//, " " highlight("COLOR_COMMENT") "\\1" highlightend("COLOR_COMMENT", lineColor), "g");
 
