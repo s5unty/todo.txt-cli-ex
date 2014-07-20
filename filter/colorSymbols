@@ -10,8 +10,16 @@
 # CONTENTS:
 #
 # REMARKS:
+#   - Make this the _last_ highlighting filter (simple text replacements are
+#     okay), especially when you use the (default) COLOR_TASKNUM highlighting;
+#     as it surrounds the leading task number with color markup, following
+#     filters won't be able to extract the line's color (via getLineColor()) any
+#     more.
+#     Also, because the previously single-colored line is now split into
+#     differing segments, that makes it much more difficult to apply different
+#     line coloring in the following filters.
 #
-# COPYRIGHT: (C) 2010-2012 Ingo Karkat
+# COPYRIGHT: (C) 2010-2013 Ingo Karkat
 #   This program is free software; you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License.
 #   See http://www.gnu.org/copyleft/gpl.txt
@@ -19,7 +27,9 @@
 # @(#)colorSymbols	$Id$	todo.txt-cli-ex
 ###############################################################################
 
-export COLOR_CONTEXT=${COLOR_CONTEXT-'\\033[35m'}
+: ${TODOTXT_PARTIALDONE_PATTERN='\([^()]+ => [0-9]{4}-[0-9]{2}-[0-9]{2}( [^()]+)?\)'}
+export TODOTXT_PARTIALDONE_PATTERN
+export COLOR_CONTEXT_EXT=${COLOR_CONTEXT_EXT-'\\033[35m'}
 export COLOR_TASKNUM=${COLOR_TASKNUM-'\\033[7m'}
 export COLOR_TASKNUM_PRI_A=${COLOR_TASKNUM_PRI_A-'\\033[0;41m'}
 export COLOR_TASKNUM_PRI_B=${COLOR_TASKNUM_PRI_B-'\\033[5;45m'}
@@ -30,10 +40,14 @@ export COLOR_TASKNUM_PRI_X=${COLOR_TASKNUM_PRI_X-'\\033[0;46m'}
 export COLOR_PROJECT=${COLOR_PROJECT-'\\033[1;34m'}
 export COLOR_MARKERS='\\033[38;5;202m'
 export COLOR_COMMENT='\\033[4m'
+##up
+export COLOR_PROJECT_EXT=${COLOR_PROJECT_EXT-'\\033[1;34m'}
+export COLOR_DATE=${COLOR_DATE-$CYAN}
+##up
 export COLOR_ALTERNATING=${COLOR_ALTERNATING-$DEFAULT'\\033[47m'}
 
 if [ $TODOTXT_PLAIN -eq 0 ]; then
-awk --re-interval '
+awk '
 function hasHighlight(colorVar) {
     return (ENVIRON[colorVar] != "")
 }
@@ -113,10 +127,22 @@ function getLineColor() {
             }
         }
     }
+
     if (hasHighlight("COLOR_CONTEXT")) $0 = gensub(/ (@[^ ]+)/, " " highlight("COLOR_CONTEXT") "\\1" highlightend("COLOR_CONTEXT", lineColor), "g")
     if (hasHighlight("COLOR_PROJECT")) $0 = gensub(/ (\+[a-zA-Z][^ ]+)/, " " highlight("COLOR_PROJECT") "\\1" highlightend("COLOR_PROJECT", lineColor), "g")
     if (hasHighlight("COLOR_MARKERS")) $0 = gensub(/ ([[:alnum:]_\-/@#]+:[[:alnum:]=.<>_\-/@#]+)/, " " highlight("COLOR_MARKERS") "\\1" highlightend("COLOR_MARKERS", lineColor), "g")
     if (hasHighlight("COLOR_COMMENT")) $0 = gensub(/ \/\* ([^*]*) \*\//, " " highlight("COLOR_COMMENT") "\\1" highlightend("COLOR_COMMENT", lineColor), "g");
+##up
+    partialDonePattern = ENVIRON["TODOTXT_PARTIALDONE_PATTERN"]
+    if (partialDonePattern != "" && hasHighlight("COLOR_DONE"))
+        $0 = gensub(partialDonePattern, highlight("COLOR_DONE") "&" highlightend("COLOR_DONE", lineColor), "g")
+    if (hasHighlight("COLOR_CONTEXT_EXT"))
+        $0 = gensub(/ (@[^ ]+)/, " " highlight("COLOR_CONTEXT_EXT") "\\1" highlightend("COLOR_CONTEXT_EXT", lineColor), "g")
+    if (hasHighlight("COLOR_PROJECT_EXT"))
+        $0 = gensub(/ (\+[^ ]+)/, " " highlight("COLOR_PROJECT_EXT") "\\1" highlightend("COLOR_PROJECT_EXT", lineColor), "g")
+    if (hasHighlight("COLOR_DATE"))
+        $0 = gensub(/ ([0-9]{4}-[0-9]{2}-[0-9]{2}) /, " " highlight("COLOR_DATE") "\\1" lineColor " ", "")
+##up
 
     $0 = $0 lineEndColor
 

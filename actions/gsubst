@@ -1,0 +1,91 @@
+#!/bin/bash
+###############################################################################
+##
+# FILE:         gsubst
+# PRODUCT:      todo.txt-cli-ex
+# AUTHOR:       Ingo Karkat <ingo@karkat.de>
+# DATE CREATED: 20-Dec-2013
+#
+###############################################################################
+# CONTENTS:
+#
+# REMARKS:
+#
+# COPYRIGHT: (C) 2013 Ingo Karkat
+#   This program is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License.
+#   See http://www.gnu.org/copyleft/gpl.txt
+#
+# @(#)gsubst	$Id$	todo.txt-cli-ex
+###############################################################################
+
+action=$1
+shift
+
+[ "$action" = "usage" ] && {
+    echo "    $(basename $0) PATTERN REPLACEMENT [PATTERN REPLACEMENT ...] [SRC]"
+    echo "      Replaces all instances of (sed-style) PATTERN with REPLACEMENT"
+    echo "      on ALL lines in todo.txt or SRC file."
+    echo ""
+    exit
+}
+
+errmsg="usage: $TODO_SH $(basename $0) PATTERN REPLACEMENT [PATTERN REPLACEMENT ...] [SRC]"
+
+typeset -a replacements=()
+buildReplacement()
+{
+    cleaninput
+    input=${input//%/\\%}
+    # Above takes care of the replacement; for the pattern, we only have to escape
+    # the substitution delimiter, as it's supposed to be an sed regexp.
+    # Note: Use a substitution delimiter that has no special meaning as a regexp
+    # symbol. For example, "|" causes problems when it is contained in pattern
+    # (e.g. /\(^\| \)/), and then mistakenly double-escaped.
+    replacements+=(-e "s%${pattern//%/\\%}%${input}%g")
+}
+
+FILE="$TODO_FILE"
+pattern=
+input=
+if [[ $# -lt 2 && $TODOTXT_FORCE = 0 ]]; then
+    IFS=$'\n' read -p "Pattern: " pattern
+    [ "$pattern" ] || exit 1
+    IFS=$'\n' read -p "Replacement: " input
+    buildReplacement
+fi
+
+while [[ $# -ge 2 ]]
+do
+    pattern=$1
+    input=$2
+    shift; shift
+    buildReplacement
+done
+if [ $# -eq 1 ]; then
+    FILE="$TODO_DIR/$1"
+    shift
+    [ -f "$FILE" ] || die "TODO: File $FILE does not exist."
+fi
+
+
+answer=y
+if  [ $TODOTXT_FORCE = 0 ]; then
+    affectedLines=$(cat "$FILE" | sed -n "${replacements[@]/%g/gp}")
+    if [ "$affectedLines" ]; then
+        echo "$(getPrefix "$FILE"): Affected lines:"
+        echo "$affectedLines"
+        read -p "Make those replacements? (y/n) " answer
+    else
+        die "$(getPrefix "$FILE"): The pattern does not match in any line."
+    fi
+fi
+if [ "$answer" = 'y' ]; then
+    sed -i.bak "${replacements[@]}" "$FILE" || die $?
+    if [ $TODOTXT_VERBOSE -gt 0 ]; then
+        lineCnt=$(echo "$affectedLines" | wc -l)
+        echo "$(getPrefix "$FILE"): $lineCnt tasks updated."
+    fi
+else
+    exit 1
+fi

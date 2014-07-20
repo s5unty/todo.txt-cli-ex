@@ -11,7 +11,7 @@
 #
 # REMARKS:
 #
-# COPYRIGHT: (C) 2010-2012 Ingo Karkat
+# COPYRIGHT: (C) 2010-2013 Ingo Karkat
 #   This program is free software; you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License.
 #   See http://www.gnu.org/copyleft/gpl.txt
@@ -30,12 +30,14 @@ shift
     exit
 }
 
+set -o pipefail
+
 # Configuration to limit the priorities that are considered.
 : ${TODOTXT_SUMMARY_PRIORITIES:=A-Z}
 
 export TODOTXT_VERBOSE=0    # Turn off the list footer.
 
-totalNum=$(sed -ne '$ =' "$TODO_FILE")   # Total task number, not just the ones matching TERM.
+totalNum=$(sed -ne '$ =' "$TODO_FILE") || exit $?   # Total task number, not just the ones matching TERM.
 if [ $# -eq 0 ]; then
     listNum=$totalNum
     totalMessage=
@@ -64,31 +66,36 @@ activeNum=$(
 futureNum=$((listNum - activeNum - waitNum - doneNum - trashedNum))  # All tasks that will only come due in the future.
 # When the futureTasks filter isn't enabled, this will be 0.
 
+partDoneNum=$("$TODO_FULL_SH" -p lsdopart "$@" | wc -l)   # All partially done tasks.
+
+
+filter=
+[ $# -gt 0 ] && filter="$* "
+summaryOfPriorities="${listNum} ${filter}tasks${totalMessage}, ${prioNum} prioritized, ${dueNum} due"
+summaryOfStates="${activeNum} open, ${waitNum} waiting, ${futureNum} future, ${trashedNum} trashed, ${partDoneNum} partially done, ${doneNum} done"
+echo "TODO: ${summaryOfPriorities}"
+echo "TODO: ${summaryOfStates}"
+
+
 inOutStat()
 {
     local -r inOut=$("$TODO_FULL_SH" -p inout -s "$@")
     echo "${inOut#TODO: }"
 }
-
-waitReasons=
-if [ $waitNum -gt 0 ]; then
-    waitReasons=$("$TODO_FULL_SH" listblockers "$@" | sed -n -e '1h' -e '1!H' -e '$g' -e '$s/\n/, /g' -e '$p')
-fi
-
-prioritizedProjects=$("$TODO_FULL_SH" lspriprj "$TODOTXT_SUMMARY_PRIORITIES" "$@" | sed -n -e '1h' -e '1!H' -e '$g' -e '$s/\n/, /g' -e '$p')
-
-
-filter=
-[ $# -gt 0 ] && filter="$* "
-echo "TODO: ${listNum} ${filter}tasks${totalMessage}, ${prioNum} prioritized, ${dueNum} due"
-echo "TODO: ${activeNum} open, ${waitNum} waiting, ${futureNum} future, ${trashedNum} trashed, ${doneNum} done"
-
 inOutYesterday=$(inOutStat 'yesterday' "$@")
 inOutToday=$(inOutStat 'today' "$@")
 echo "TODO: ${inOutYesterday}; ${inOutToday}"
 
+
+prioritizedProjects=$("$TODO_FULL_SH" lspriprj "$TODOTXT_SUMMARY_PRIORITIES" "$@" | sed -n -e '1h' -e '1!H' -e '$g' -e '$s/\n/, /g' -e '$p')
 if [ "$prioritizedProjects" ]; then
     echo "TODO: prioritized $prioritizedProjects"
+fi
+
+
+waitReasons=
+if [ $waitNum -gt 0 ]; then
+    waitReasons=$("$TODO_FULL_SH" listblockers "$@" | sed -n -e '1h' -e '1!H' -e '$g' -e '$s/\n/, /g' -e '$p')
 fi
 if [ "$waitReasons" ]; then
     echo "TODO: waiting for $waitReasons"

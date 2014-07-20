@@ -11,7 +11,7 @@
 #
 # REMARKS:
 #
-# COPYRIGHT: (C) 2010-2012 Ingo Karkat
+# COPYRIGHT: (C) 2010-2013 Ingo Karkat
 #   This program is free software; you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License.
 #   See http://www.gnu.org/copyleft/gpl.txt
@@ -27,7 +27,7 @@ if [ $TODOTXT_PLAIN -eq 0 ]; then
     # element when it is used to continue the line highlighting.
 
     if [ ${TERM_COLORS:-0} -ge 256 ]; then
-        export COLOR_DUE_FUTURE=${COLOR_DUE_FUTURE-$DEFAULT'\\033[48;5;195m'}
+        export COLOR_DUE_FUTURE=${COLOR_DUE_FUTURE-$DEFAULT'\\033[48;5;244m'}
         export COLOR_DUE_TODAY=${COLOR_DUE_TODAY-$DEFAULT'\\033[48;5;190m'}
         export COLOR_DUE_1DAY=${COLOR_DUE_1DAY-$DEFAULT'\\033[48;5;193m'}
         export COLOR_DUE_2DAY=${COLOR_DUE_2DAY-$DEFAULT'\\033[48;5;230m'}
@@ -52,7 +52,7 @@ if [ $TODOTXT_PLAIN -eq 0 ]; then
         export COLOR_UNTIL_3DAY=${COLOR_UNTIL_3DAY-$DEFAULT'\\033[43m'}
     fi
 
-    awk --re-interval -v date=$1 '
+    awk -v date=$1 '
 function getThreshold(date) {
     if (date == "") {
         return mktime(strftime("%Y %m %d 00 00 00", systime()))
@@ -171,7 +171,7 @@ BEGIN {
 { print }
 '
 elif [ $TODOTXT_FILTER_FUTURE_TASKS -ne 0 ]; then
-    awk --re-interval -v date=$1 '
+    awk -v date=$1 '
 function getThreshold(date) {
     if (date == "") {
         return mktime(strftime("%Y %m %d 00 00 00", systime()))
