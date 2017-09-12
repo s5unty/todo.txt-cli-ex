@@ -36,8 +36,8 @@ awk -v commentSymbol="$TODOTXT_COMMENT_SYMBOL" '
 }
 / x:[0-9]+( |$)/ {
     today = strftime("%Y-%m-%d", systime())
-    dupItem = gensub(/^.* x:([0-9]+).*$/, "\\1", "")
-    $0 = gensub(/^( *[0-9]+ )(\(.\) )?/, "\\1X " today " ", "") commentSymbol "dup of " dupItem
+    dupItem = gensub(/^.* x:([0-9]+).*$/, "\\1", "g")
+    $0 = gensub(/^( *[0-9]+ )(\(.\) )?/, "\\1X " today " ", "g") commentSymbol "dup of " dupItem
 }
 { print }
 '

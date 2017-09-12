@@ -30,7 +30,7 @@ function getThreshold(date) {
     if (date == "") {
         return mktime(strftime("%Y %m %d 00 00 00", systime()))
     } else {
-        return mktime(gensub(/([0-9]{4})[-/]([0-9]{1,2})[-/]([0-9]{1,2})/, "\\1 \\2 \\3 00 00 00", "", date))
+        return mktime(gensub(/([0-9]{4})[-/]([0-9]{1,2})[-/]([0-9]{1,2})/, "\\1 \\2 \\3 00 00 00", "g", date))
     }
 }
 BEGIN {
@@ -43,7 +43,7 @@ BEGIN {
     next
 }
 / [tuz]:[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}/ {
-    date = mktime(gensub(/^.* [tuz]:([0-9]{4})[-/]([0-9]{1,2})[-/]([0-9]{1,2})([^0-9].*)?$/, "\\1 \\2 \\3 00 00 00", ""))
+    date = mktime(gensub(/^.* [tuz]:([0-9]{4})[-/]([0-9]{1,2})[-/]([0-9]{1,2})([^0-9].*)?$/, "\\1 \\2 \\3 00 00 00", "g"))
     if (date - span > threshold) {
         next
     }

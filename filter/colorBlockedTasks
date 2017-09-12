@@ -66,7 +66,7 @@ function highlightBlocker(      i) {
             # its highlighting of task numbers. (Assuming it comes after us in
             # the filter pipeline.)
             if ($i !~ /^w:[0-9]+$/ && $i !~ /^w:\([^)]+/) {
-                $i = gensub(/(w:)([^( ][^ ]*)/, "\\1" highlight("COLOR_BLOCKER") "\\2" highlightend("COLOR_BLOCKER", lineColor), "", $i)
+                $i = gensub(/(w:)([^( ][^ ]*)/, "\\1" highlight("COLOR_BLOCKER") "\\2" highlightend("COLOR_BLOCKER", lineColor), "g", $i)
             }
         }
         # Remove the brackets in the w:(wait reason) marker; the highlighting
