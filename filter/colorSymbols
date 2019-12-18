@@ -115,7 +115,7 @@ function getLineColor() {
                 else if ($0 ~ /\(.\)/) { bg_tasknum = "COLOR_TASKNUM_PRI_X" }
 
             # Highlight current task number.
-            $0 = gensub(/([0-9]+) /, highlight(bg_tasknum) "\\1" highlightend(bg_tasknum, lineColor) " ", "g")
+            $0 = gensub(/([0-9]+) /, highlight(bg_tasknum) "\\1" highlightend(bg_tasknum, lineColor) " ", 1)
 
             # Highlight any m:42 references to other tasks, and normalize number
             # width to e.g. m:042.
